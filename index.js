@@ -33,7 +33,11 @@ app.post("/admin/login", (req, res)=>{
      const {secret} = req.body
      if(secret === SECRET_KEY){
     const token = jwt.sign({role: "admin"}, JWT_SECRET, {expiresIn: "24hr"})
-       res.json({token})
+       res.json({
+        token, 
+        name: "Admin",
+        email: "admin@example.com",
+      })
      }else{
        res.json({message: "Invalid Secret"})
      }
