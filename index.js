@@ -1,4 +1,5 @@
 const express = require('express')
+const cors = require('cors');
 const jwt = require("jsonwebtoken")
 const app = express();
 
@@ -6,6 +7,8 @@ const app = express();
 const SECRET_KEY = "supersecretadmin";
 const JWT_SECRET = "your_jwt_secret"
 
+
+app.use(cors());
 app.use(express.json());
 
 const verifyJWT = (req, res, next) =>{
@@ -35,7 +38,7 @@ app.post("/admin/login", (req, res)=>{
     const token = jwt.sign({role: "admin"}, JWT_SECRET, {expiresIn: "24hr"})
        res.json({
         token, 
-        name: "Admin",
+        name: "admin",
         email: "admin@example.com",
       })
      }else{
