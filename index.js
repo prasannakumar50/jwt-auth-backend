@@ -10,11 +10,10 @@ const allowedOrigins = ['https://ecommerce-app-self-tau.vercel.app'];
 
 app.use(cors({
   origin: function(origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(null, false);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -22,18 +21,19 @@ app.use(cors({
   credentials: true
 }));
 
-
+app.options('*', cors());
 app.use(express.json());
 
 const verifyJWT = (req, res, next) => {
   const token = req.headers['authorization'];
   if (!token) return res.status(401).json({ message: "No token provided." });
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     next();
-  } catch {
-    return res.status(402).json({ message: "Invalid token" });
+  } catch (err) {
+    return res.status(403).json({ message: "Invalid token" });
   }
 };
 
@@ -43,6 +43,7 @@ app.get('/admin/api/data', verifyJWT, (req, res) => {
 
 app.post('/admin/login', (req, res) => {
   const { secret } = req.body;
+
   if (secret === SECRET_KEY) {
     const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '24h' });
     res.json({ token, name: 'admin', email: 'admin@example.com' });
@@ -51,8 +52,18 @@ app.post('/admin/login', (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
+// ✅ Optional dynamic admin route — only needed if frontend requests /admin/123
+app.get('/admin/:id', (req, res) => {
+  const adminId = req.params.id;
+  res.json({ message: `You requested admin with ID: ${adminId}` });
 });
 
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+app.use((err, req, res, next) => {
+  console.error('Global error handler:', err.stack);
+  res.status(500).json({ message: 'Internal Server Error', error: err.message });
+});
