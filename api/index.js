@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const { createServer } = require('@vercel/node'); // Not always needed, but for clarity
 
 const SECRET_KEY = "supersecretadmin";
 const JWT_SECRET = "your_jwt_secret";
@@ -55,14 +54,9 @@ app.get('/admin/:id', (req, res) => {
   res.json({ message: `You requested admin with ID: ${adminId}` });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
 app.use((err, req, res, next) => {
   console.error('Global error handler:', err.stack);
   res.status(500).json({ message: 'Internal Server Error', error: err.message });
 });
 
-module.exports = app;
+module.exports = app; 
