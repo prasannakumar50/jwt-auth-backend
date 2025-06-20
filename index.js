@@ -8,14 +8,16 @@ const JWT_SECRET = "your_jwt_secret";
 
 const allowedOrigins = ['https://ecommerce-app-self-tau.vercel.app'];
 
-app.use(cors({
+const corsOptions = {
   origin: 'https://ecommerce-app-self-tau.vercel.app',
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
 
-app.options('*', cors());
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 const verifyJWT = (req, res, next) => {
