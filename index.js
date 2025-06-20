@@ -8,7 +8,11 @@ const SECRET_KEY = "supersecretadmin";
 const JWT_SECRET = "your_jwt_secret"
 
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://ecommerce-app-self-tau.vercel.app', 
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 const verifyJWT = (req, res, next) =>{
