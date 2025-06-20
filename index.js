@@ -1,25 +1,30 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-
 const app = express();
 
 const SECRET_KEY = "supersecretadmin";
 const JWT_SECRET = "your_jwt_secret";
 
-// Enable CORS for your frontend domain
-app.use(cors({
-  origin: 'https://ecommerce-app-self-tau.vercel.app',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+const allowedOrigins = ['https://ecommerce-app-self-tau.vercel.app'];
 
-// Handle preflight requests
-app.options('*', cors());
+app.use(cors({
+  origin: function(origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 app.use(express.json());
 
-// JWT middleware to protect routes
 const verifyJWT = (req, res, next) => {
   const token = req.headers['authorization'];
   if (!token) {
@@ -35,18 +40,14 @@ const verifyJWT = (req, res, next) => {
   }
 };
 
-// Protected route example
 app.get("/admin/api/data", verifyJWT, (req, res) => {
   res.json({ message: "Protected route accessible" });
 });
 
-// Admin login route
 app.post("/admin/login", (req, res) => {
   const { secret } = req.body;
-
   if (secret === SECRET_KEY) {
     const token = jwt.sign({ role: "admin" }, JWT_SECRET, { expiresIn: "24h" });
-
     res.json({
       token,
       name: "admin",
@@ -57,8 +58,7 @@ app.post("/admin/login", (req, res) => {
   }
 });
 
-// Use dynamic port for Railway
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on ${PORT}`);
+  console.log(`Server running on ${PORT}`);
 });
